@@ -31,24 +31,6 @@ const item3 = new Item({
 
 const defaultItems = [item1, item2, item3];
 
-Item.countDocuments({}, function (error, nbItems) {
-  if (error) {
-    console.log(error);
-  } else {
-    if (nbItems === 0) {
-      Item.insertMany(defaultItems, function (err) {
-        if (err) {
-          console.log("Oups, items couldnt be insert error:" + err);
-        } else {
-          console.log("Successfully saved default items to DB.");
-        }
-      });
-    } else {
-      console.log("Items list is not empty!");
-    }
-  }
-});
-
 app.set("view engine", "ejs");
 
 app.get("/", function (req, res) {
@@ -60,10 +42,21 @@ app.get("/", function (req, res) {
     if (error) {
       console.log(error);
     } else {
-      res.render("list", {
-        listTitle: "Today",
-        newListItems: foundItems
-      });
+      if (foundItems.length === 0) {
+        Item.insertMany(defaultItems, function (err) {
+          if (err) {
+            console.log("Oups, items couldnt be insert error:" + err);
+          } else {
+            console.log("Successfully saved default items to DB.");
+          }
+        });
+        res.redirect("/");
+      } else {
+        res.render("list", {
+          listTitle: "Today",
+          newListItems: foundItems
+        });
+      }
     }
   });
 
